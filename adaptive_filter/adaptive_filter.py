@@ -14,7 +14,7 @@ import sounddevice as sd
 # Documentation: https://python-sounddevice.readthedocs.io/en/0.4.6/usage.html
 
 # Open audio file
-f_samp, audio = wavfile.read("Radioactive.wav")
+f_samp, audio = wavfile.read("Audio/Radioactive.wav")
 
 # # Combine channels by averaging
 # audio = (audio[:, 0] + audio[:, 1]) / 2
