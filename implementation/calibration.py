@@ -78,6 +78,11 @@ resp_mag.set_xlabel("$f$ (Hz)")
 
 
 # Perform calibration
+#NOTE Some things that may help could be:
+# - Attenuating larger ranges at a time e.g. bass, mid, and treble
+#   This should also produce a nicer filter.
+# - Reducing the range of frequencies the filter attenuates.
+# - Reducing the length of the impulse response.
 attenuation = actual_spect/resp_spect
 calib_filt = fft.ifft(fft.ifftshift(attenuation))
 calib_filt = np.real(calib_filt)

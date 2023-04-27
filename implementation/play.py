@@ -15,6 +15,8 @@ import calibration as c
 f_samp, audio = wavfile.read("adaptive_filter_testing/Audio/Radioactive.wav")
 audio = audio[:, 0]
 
+# NOTE Could play the audio in parts; while one part is playing, apply filter to the next part.
+
 # Apply filter
 print("Applying filter to audio...")
 # filtered = sig.filtfilt(b=c.calib_filt, a=1, x=audio)
