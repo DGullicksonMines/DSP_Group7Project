@@ -12,7 +12,9 @@ import sounddevice as sd
 # Load calibration audio
 # f_samp, calibration = wavfile.read("implementation/problem3.wav") #TODO use actual calibration audio
 f_samp, calibration = wavfile.read("adaptive_filter_testing/Audio/Radioactive.wav") #TODO use actual calibration audio
-calibration = calibration[:, 0]
+
+# Remove all but one channel from the audio
+if len(calibration.shape) > 1: calibration = calibration[:, 0]
 
 # Fix audio
 # NOTE This part isn't needed for the actual calibration audio
