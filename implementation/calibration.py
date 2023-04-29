@@ -1,3 +1,6 @@
+#NOTE If the played audio is not being detected, ensure that
+# Acoustic Echo Correction (AEC) is turned OFF in your sound settings.
+
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
@@ -22,10 +25,39 @@ duration_ms = 2000
 duration_samps = f_samp * duration_ms // 1000
 calibration = calibration[:duration_samps]
 
-# Get room response
-response = sd.playrec(calibration, samplerate=f_samp, channels=1, blocking=True)
+
+
+# ---== Get room response ==---
+response = sd.playrec(calibration, samplerate=f_samp, channels=2, blocking=True, device=(1, 3))
+response = response[:, 1]
 resp_len = len(response)
-response = np.reshape(response, newshape=(resp_len,))
+# response = np.reshape(response, newshape=(resp_len,))
+
+# Create lowpass filter for response
+lp_b, lp_a = sig.iirdesign(wp=8000, ws=8500, gpass=0.1, gstop=50, fs=f_samp)
+lp_freqs, lp_spect = sig.freqz(b=lp_b, a=lp_a, worN=1024, fs=f_samp)
+_, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)
+
+response = sig.filtfilt(b=lp_b, a=lp_a, x=response)
+
+# Make bode plots
+mag = np.abs(lp_spect)
+phase = np.angle(lp_spect)
+fig, (impulse_plot, mag_plot, phase_plot) = plt.subplots(3, layout="constrained")
+impulse_plot.stem(impulse)
+mag_plot.plot(lp_freqs, 10*np.log10(mag))
+phase_plot.plot(lp_freqs, phase)
+
+impulse_plot.set_title("Lowpass Impulse Response")
+impulse_plot.set_xlabel(r"$n$")
+mag_plot.set_title("Lowpass Frequency Response")
+mag_plot.set_ylabel(r"$|H(\omega)|$ (dB)")
+mag_plot.sharex(phase_plot)
+mag_plot.xaxis.set_visible(False)
+phase_plot.set_ylabel(r"$\angle H(\omega)$ (rad)")
+phase_plot.set_xlabel(r"$f$ (Hz)")
+
+
 
 # Plot signals
 duration = resp_len/f_samp
@@ -62,19 +94,21 @@ resp_mag.set_xlabel("$f$ (Hz)")
 # resp_phase.set_xlabel("$f$ (Hz)")
 
 
-# # Run matched filter on response
-# filt = calibration[::-1]
 
-# filtered = sig.convolve(response, filt)
-# sig_len = len(filtered)
-# fltrd_duration = sig_len/f_samp
-# t = np.linspace(0, fltrd_duration, sig_len)
+# Run matched filter on response
+filt = calibration[::-1]
 
-# # Plot the output of the matched filter
-# plt.figure()
-# plt.title("Matched Filter Output")
-# plt.xlabel("Time (s)")
-# plt.plot(t, filtered)
+filtered = sig.convolve(response, filt)
+sig_len = len(filtered)
+fltrd_duration = sig_len/f_samp
+t = np.linspace(0, fltrd_duration, sig_len)
+
+# Plot the output of the matched filter
+plt.figure()
+plt.title("Matched Filter Output")
+plt.xlabel("Time (s)")
+plt.plot(t, filtered)
+
 
 
 # Perform calibration
@@ -84,9 +118,28 @@ resp_mag.set_xlabel("$f$ (Hz)")
 # - Reducing the range of frequencies the filter attenuates.
 # - Reducing the length of the impulse response.
 # - Apply lowpass to response with cutoff at max relevant frequency of actual
+resp_spect = resp_spect * np.max(actual_spect)/np.max(resp_spect) # Scale response
 attenuation = actual_spect/resp_spect
+attenuation[np.abs(freqs) > 8000] = 1
+
+# Manually smooth attenuation
+ranges = 20
+oddity = int(len(attenuation) % 2)
+attenuation = fft.ifftshift(attenuation)
+attenuation = attenuation[:(len(attenuation)+oddity)//2]
+range_len = len(attenuation)//ranges
+for i in range(ranges):
+    start = range_len*i
+    end = range_len*(i+1)
+    attenuation[start:end] = np.mean(attenuation[start:end])
+if oddity == 0:
+    attenuation = np.concatenate((attenuation[::-1], attenuation))
+else:
+    attenuation = np.concatenate((attenuation[:0:-1], attenuation))
+
 calib_filt = fft.ifft(fft.ifftshift(attenuation))
 calib_filt = np.real(calib_filt)
+calib_filt = calib_filt[:255] # Reduce number of taps
 
 # Make bode plots
 mag = np.abs(attenuation)
@@ -103,7 +156,8 @@ mag_plot.set_ylabel(r"$|H(\omega)|$ (dB)")
 mag_plot.sharex(phase_plot)
 mag_plot.xaxis.set_visible(False)
 phase_plot.set_ylabel(r"$\angle H(\omega)$ (rad)")
-phase_plot.set_xlabel(r"$\omega$ (rad)")
+phase_plot.set_xlabel(r"$f$ (Hz)")
+
 
 
 plt.show()
