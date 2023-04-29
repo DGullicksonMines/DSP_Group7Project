@@ -29,6 +29,9 @@ _, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)
 
 filtered = sig.filtfilt(b=lp_b, a=lp_a, x=filtered)
 
+# Volume match filtered audio
+filtered = filtered * np.max(audio)/np.max(filtered)
+
 # Make bode plots
 mag = np.abs(lp_spect)
 phase = np.angle(lp_spect)
@@ -72,14 +75,21 @@ p2.set_ylabel("Filtered")
 p2.set_xlabel("$f$ (Hz)")
 plt.show()
 
+
+
+
+# Write audio
+print("Writing audio...")
+filtered = filtered.astype(np.int16)
+wavfile.write("filtered_audio.wav", rate=f_samp, data=filtered)
+
 # Wait on plots to finish
 print("Finalizing plots...")
 plt.pause(5)
 
-
 # Play audio
 print("Playing audio!")
-sd.play(filtered.astype(np.int16), samplerate=f_samp)
+sd.play(filtered, samplerate=f_samp)
 input("Press ENTER to stop playing.")
 sd.stop()
 input("Press ENTER to exit.")
