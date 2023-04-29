@@ -23,7 +23,7 @@ filtered = sig.filtfilt(b=c.calib_filt, a=1, x=audio)
 
 # Create lowpass filter for response
 # TODO detect cutoff frequency automatically
-lp_b, lp_a = sig.iirdesign(wp=6000, ws=6500, gpass=0.1, gstop=50, fs=f_samp)
+lp_b, lp_a = sig.iirdesign(wp=15500, ws=16000, gpass=0.1, gstop=50, fs=f_samp)
 lp_freqs, lp_spect = sig.freqz(b=lp_b, a=lp_a, worN=1024, fs=f_samp)
 _, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)
 
@@ -67,11 +67,11 @@ freqs = np.linspace(-f_samp/2, f_samp/2, audio_len)
 orig_spect = fft.fftshift(fft.fft(audio))
 filt_spect = fft.fftshift(fft.fft(filtered))
 _, (p1, p2) = plt.subplots(2, sharex=True, layout="constrained")
-p1.plot(freqs, np.abs(orig_spect))
-p2.plot(freqs, np.abs(filt_spect))
-p1.set_title("Spectrums")
-p1.set_ylabel("Original")
-p2.set_ylabel("Filtered")
+p1.plot(freqs, 10*np.log10(np.abs(orig_spect)))
+p2.plot(freqs, 10*np.log10(np.abs(filt_spect)))
+p1.set_title("Audio Spectrums")
+p1.set_ylabel("Original dB")
+p2.set_ylabel("Filtered dB")
 p2.set_xlabel("$f$ (Hz)")
 plt.show()
 

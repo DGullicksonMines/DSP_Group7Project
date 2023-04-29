@@ -33,9 +33,12 @@ response = response[:, 1]
 resp_len = len(response)
 # response = np.reshape(response, newshape=(resp_len,))
 
+# Volume match response
+response = response.astype(np.float64) * np.max(calibration)/np.max(response)
+
 # Create lowpass filter for response
 # TODO detect cutoff frequency automatically
-lp_b, lp_a = sig.iirdesign(wp=8000, ws=8500, gpass=0.1, gstop=50, fs=f_samp)
+lp_b, lp_a = sig.iirdesign(wp=15500, ws=16000, gpass=0.1, gstop=50, fs=f_samp)
 lp_freqs, lp_spect = sig.freqz(b=lp_b, a=lp_a, worN=1024, fs=f_samp)
 _, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)
 
@@ -80,19 +83,12 @@ actual_abs = np.abs(actual_spect)
 resp_abs = np.abs(resp_spect)
 
 _, (actual_mag, resp_mag) = plt.subplots(2, sharex=True, layout="constrained")
-# _, (actual_mag, actual_phase, resp_mag, resp_phase) = plt.subplots(4, sharex=True, layout="constrained")
-actual_mag.plot(freqs, (actual_abs))
-# actual_phase.plot(freqs, np.angle(actual_spect))
-resp_mag.plot(freqs, (resp_abs))
-# resp_phase.plot(freqs, np.angle(resp_spect))
-
+actual_mag.plot(freqs, 10*np.log10(actual_abs))
+resp_mag.plot(freqs, 10*np.log10(resp_abs))
 actual_mag.set_title("Frequency Spectums")
 actual_mag.set_ylabel("Actual dB")
-# actual_phase.set_ylabel("Actual rad")
 resp_mag.set_ylabel("Response dB")
 resp_mag.set_xlabel("$f$ (Hz)")
-# resp_phase.set_ylabel("Response rad")
-# resp_phase.set_xlabel("$f$ (Hz)")
 
 
 
@@ -115,9 +111,9 @@ plt.plot(t, filtered)
 # Perform calibration
 #NOTE Some things that may help could be:
 # - Reducing the range of frequencies the filter attenuates.
-resp_spect = resp_spect * np.max(actual_spect)/np.max(resp_spect) # Scale response
 attenuation = actual_spect/resp_spect
-attenuation[np.abs(freqs) > 8000] = 1
+#TODO calculate this automatically
+attenuation[np.abs(freqs) > 10000] = 1
 
 # Manually smooth attenuation
 ranges = 20
