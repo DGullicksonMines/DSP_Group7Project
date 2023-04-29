@@ -72,9 +72,14 @@ p2.set_ylabel("Filtered")
 p2.set_xlabel("$f$ (Hz)")
 plt.show()
 
+# Wait on plots to finish
+print("Finalizing plots...")
+plt.pause(5)
 
 
 # Play audio
 print("Playing audio!")
 sd.play(filtered.astype(np.int16), samplerate=f_samp)
-input("Press ENTER to exit.")
+input("Press ENTER to stop playing.")
+sd.stop()
+input("Press ENTER to stop playing.")
