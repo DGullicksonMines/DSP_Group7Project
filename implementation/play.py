@@ -15,8 +15,6 @@ import calibration as c
 f_samp, audio = wavfile.read("adaptive_filter_testing/Audio/Radioactive.wav")
 audio = audio[:, 0]
 
-# NOTE Could play the audio in parts; while one part is playing, apply filter to the next part.
-
 # Apply filter
 print("Applying filter to audio...")
 filtered = sig.filtfilt(b=c.calib_filt, a=1, x=audio)
@@ -24,6 +22,7 @@ filtered = sig.filtfilt(b=c.calib_filt, a=1, x=audio)
 
 
 # Create lowpass filter for response
+# TODO detect cutoff frequency automatically
 lp_b, lp_a = sig.iirdesign(wp=6000, ws=6500, gpass=0.1, gstop=50, fs=f_samp)
 lp_freqs, lp_spect = sig.freqz(b=lp_b, a=lp_a, worN=1024, fs=f_samp)
 _, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)

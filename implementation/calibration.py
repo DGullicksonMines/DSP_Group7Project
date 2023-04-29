@@ -34,6 +34,7 @@ resp_len = len(response)
 # response = np.reshape(response, newshape=(resp_len,))
 
 # Create lowpass filter for response
+# TODO detect cutoff frequency automatically
 lp_b, lp_a = sig.iirdesign(wp=8000, ws=8500, gpass=0.1, gstop=50, fs=f_samp)
 lp_freqs, lp_spect = sig.freqz(b=lp_b, a=lp_a, worN=1024, fs=f_samp)
 _, (impulse,) = sig.dimpulse(system=(lp_b, lp_a, 1/f_samp), n=200)
@@ -113,11 +114,7 @@ plt.plot(t, filtered)
 
 # Perform calibration
 #NOTE Some things that may help could be:
-# - Attenuating larger ranges at a time e.g. bass, mid, and treble
-#   This should also produce a nicer filter.
 # - Reducing the range of frequencies the filter attenuates.
-# - Reducing the length of the impulse response.
-# - Apply lowpass to response with cutoff at max relevant frequency of actual
 resp_spect = resp_spect * np.max(actual_spect)/np.max(resp_spect) # Scale response
 attenuation = actual_spect/resp_spect
 attenuation[np.abs(freqs) > 8000] = 1
