@@ -23,7 +23,7 @@ duration_samps = f_samp * duration_ms // 1000
 calibration = calibration[:duration_samps]
 
 # Get room response
-response = sd.playrec(data=calibration, samplerate=f_samp, channels=1, blocking=True, latency=None)
+response = sd.playrec(calibration, samplerate=f_samp, channels=1, blocking=True)
 resp_len = len(response)
 response = np.reshape(response, newshape=(resp_len,))
 
@@ -83,6 +83,7 @@ resp_mag.set_xlabel("$f$ (Hz)")
 #   This should also produce a nicer filter.
 # - Reducing the range of frequencies the filter attenuates.
 # - Reducing the length of the impulse response.
+# - Apply lowpass to response with cutoff at max relevant frequency of actual
 attenuation = actual_spect/resp_spect
 calib_filt = fft.ifft(fft.ifftshift(attenuation))
 calib_filt = np.real(calib_filt)
@@ -105,5 +106,6 @@ phase_plot.set_ylabel(r"$\angle H(\omega)$ (rad)")
 phase_plot.set_xlabel(r"$\omega$ (rad)")
 
 
+plt.show()
 if __name__ == "__main__":
-    plt.show(block=True)
+    input("Press ENTER to exit.")

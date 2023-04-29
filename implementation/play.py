@@ -24,4 +24,5 @@ filtered = sig.convolve(c.calib_filt, audio)
 
 # Play audio
 print("Playing audio!")
-sd.play(filtered, samplerate=f_samp, blocking=True)
+sd.play(filtered, samplerate=f_samp)
+input("Press ENTER to exit.")
