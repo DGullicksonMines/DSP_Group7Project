@@ -28,7 +28,7 @@ calibration = calibration[:duration_samps]
 
 
 # ---== Get room response ==---
-response = sd.playrec(calibration, samplerate=f_samp, channels=2, blocking=True, device=(1, 3))
+response = sd.playrec(calibration, samplerate=f_samp, channels=2, blocking=True)
 response = response[:, 1]
 resp_len = len(response)
 # response = np.reshape(response, newshape=(resp_len,))
