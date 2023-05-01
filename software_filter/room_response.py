@@ -9,7 +9,7 @@ from scipy.constants import pi
 # Read text file into np array
 freqs = []
 spls = []
-with open("software_filter/AvgFreqResponse.txt") as file:
+with open("software_filter/AvgFreqResponse_Better.txt") as file:
     # Ignore first 14 lines
     for _ in range(14): _ = file.readline()
 
