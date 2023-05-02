@@ -29,18 +29,46 @@ freq_start = freqs[0]
 freq_end = freqs[-1]
 freq_step = freqs[1] - freqs[0]
 f_samp = freq_end*2
-num_fill = int(freqs[0]//freq_step) #TODO ensure this is almost an integer
+num_fill = int(freq_start//freq_step) #TODO ensure this is almost an integer
 freqs = np.concatenate((
-    np.linspace(0, freqs[0], num=num_fill, endpoint=False, dtype=freqs.dtype),
+    np.linspace(0, freq_start, num=num_fill, endpoint=False, dtype=freqs.dtype),
     freqs
 ))
 freqs = np.concatenate((-freqs[::-1], freqs[1:]))
 spls = np.concatenate((np.zeros(num_fill), spls))
 spls = np.concatenate((spls[::-1], spls[1:]))
 
+# # Generate desired response
+# desired = np.zeros(len(freqs))
+# desired[np.abs(freqs) >= freq_start] = 75
+
 # Generate desired response
-desired = np.zeros(len(freqs))
-desired[np.abs(freqs) >= freq_start] = 75
+des_freqs = []
+desired = []
+with open("software_filter/Harman Target Curve.txt") as file:
+    # Fill arrays
+    while line := file.readline():
+        freq, des = line.split(sep=None)
+        des_freqs.append(float(freq))
+        desired.append(float(des))
+des_freqs = np.array(des_freqs)
+desired = np.array(desired)
+desired += 75 - np.mean(desired)
+
+# Mirror response
+freq_start = des_freqs[0]
+freq_end = des_freqs[-1]
+freq_step = des_freqs[1] - des_freqs[0]
+num_fill = int(freq_start//freq_step) #TODO ensure this is almost an integer
+des_freqs = np.concatenate((
+    np.linspace(0, freq_start, num=num_fill, endpoint=False, dtype=des_freqs.dtype),
+    des_freqs
+))
+des_freqs = np.concatenate((-des_freqs[::-1], des_freqs[1:]))
+desired = np.concatenate((np.zeros(num_fill), desired))
+desired = np.concatenate((desired[::-1], desired[1:]))
+desired = np.interp(freqs, des_freqs, desired)
+
 
 
 # Plot room response
