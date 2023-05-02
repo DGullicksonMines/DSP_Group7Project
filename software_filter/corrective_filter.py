@@ -92,20 +92,15 @@ des_plt.grid()
 correction = desired-spls
 
 # Reduce length and smooth
-ranges = 1000
+ranges = 500
 oddity = int(len(correction) % 2)
 correction = fft.ifftshift(correction)
 correction = correction[:(len(correction)+oddity)//2]
 range_len = len(correction)//ranges
-# min_start = np.argmax(correction > 0)
 for i in range(ranges):
     start = range_len*i
     end = range_len*(i+1)
-    if correction[start] > 0:
-        # start = max(min_start, start)
-        correction[i] = np.mean(correction[start:end])
-    else:
-        correction[i] = 0
+    correction[i] = np.mean(correction[start:end])
 correction = correction[:ranges]
 if oddity == 0:
     correction = np.concatenate((correction[::-1], correction))
