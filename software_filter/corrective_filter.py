@@ -69,6 +69,9 @@ desired = np.concatenate((np.zeros(num_fill), desired))
 desired = np.concatenate((desired[::-1], desired[1:]))
 desired = np.interp(freqs, des_freqs, desired)
 
+# Match correction range
+spls[np.abs(freqs) < freq_start] = 0
+
 
 
 # Plot room response
@@ -79,6 +82,8 @@ room_plt.set_title("Room Frequency Response")
 room_plt.set_ylabel("Room SPL (dB)")
 des_plt.set_ylabel("Desired SPL (dB)")
 des_plt.set_xlabel("$f$ (Hz)")
+room_plt.set_xscale("log")
+room_plt.set_xlim((1, room_plt.get_xlim()[1]))
 room_plt.grid()
 des_plt.grid()
 
@@ -87,22 +92,27 @@ des_plt.grid()
 correction = desired-spls
 
 # Reduce length and smooth
-ranges = 500
+ranges = 1000
 oddity = int(len(correction) % 2)
 correction = fft.ifftshift(correction)
 correction = correction[:(len(correction)+oddity)//2]
 range_len = len(correction)//ranges
+# min_start = np.argmax(correction > 0)
 for i in range(ranges):
     start = range_len*i
     end = range_len*(i+1)
-    correction[i] = np.mean(correction[start:end])
+    if correction[start] > 0:
+        # start = max(min_start, start)
+        correction[i] = np.mean(correction[start:end])
+    else:
+        correction[i] = 0
 correction = correction[:ranges]
 if oddity == 0:
     correction = np.concatenate((correction[::-1], correction))
 else:
     correction = np.concatenate((correction[:0:-1], correction))
 freqs = np.linspace(-f_samp/2, f_samp/2, len(correction))
-correction[np.abs(freqs) <= 10] = 0
+correction[np.abs(freqs) <= freq_start] = 0
 
 correction_linear = 10**(correction/10)
 corr_filt = fft.ihfft(fft.ifftshift(correction_linear))
@@ -116,9 +126,12 @@ imp_plt.stem(corr_filt)
 spect_plt.set_title("Correction Frequency Response")
 spect_plt.set_ylabel("SPL (dB)")
 spect_plt.set_xlabel("$f$ (Hz)")
+spect_plt.set_xscale("log")
+spect_plt.set_xlim((1, spect_plt.get_xlim()[1]))
 spect_plt.grid()
 imp_plt.set_title("Correction Impulse Response")
 imp_plt.set_xlabel("$n$")
+imp_plt.set_xlim((-5, 100))
 imp_plt.grid()
 
 
