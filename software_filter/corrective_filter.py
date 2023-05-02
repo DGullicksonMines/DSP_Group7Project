@@ -84,7 +84,7 @@ corr_filt = np.real(corr_filt)
 # Plot correction
 _, (spect_plt, imp_plt) = plt.subplots(2, layout="constrained")
 spect_plt.plot(freqs, correction)
-imp_plt.plot(corr_filt)
+imp_plt.stem(corr_filt)
 spect_plt.set_title("Correction Frequency Response")
 spect_plt.set_ylabel("SPL (dB)")
 spect_plt.set_xlabel("$f$ (Hz)")

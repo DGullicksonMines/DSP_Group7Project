@@ -18,15 +18,16 @@ with open("software_filter/AvgFreqResponse_Better.txt") as file:
         freq, spl = line.split(sep=None)
         freqs.append(float(freq))
         spls.append(float(spl))
-freqs = np.array(freqs)
-spls = np.array(spls)
-
+freqs = np.array(freqs, dtype=np.float32)
+spls = np.array(spls, dtype=np.float32)
 
 # Plot room response
-plt.figure()
-plt.plot(freqs, spls)
+fig = plt.figure()
+ax = fig.add_subplot()
 plt.title("Room Frequency Response")
-plt.ylabel("Room SPL (dB)")
+plt.ylabel("SPL (dB)")
 plt.xlabel("$f$ (Hz)")
+ax.plot(freqs, spls)
+ax.set_xscale('log')
 plt.grid()
 plt.show()
