@@ -78,12 +78,14 @@ spls[np.abs(freqs) < freq_start] = 0
 _, (room_plt, des_plt) = plt.subplots(2, sharex=True, layout="constrained")
 room_plt.plot(freqs, spls)
 des_plt.plot(freqs, desired)
-room_plt.set_title("Room Frequency Response")
+room_plt.set_title("Frequency Response")
 room_plt.set_ylabel("Room SPL (dB)")
 des_plt.set_ylabel("Desired SPL (dB)")
 des_plt.set_xlabel("$f$ (Hz)")
 room_plt.set_xscale("log")
-room_plt.set_xlim((1, room_plt.get_xlim()[1]))
+room_plt.set_xlim((10, room_plt.get_xlim()[1]))
+room_plt.set_ylim((0, 90))
+des_plt.set_ylim((0, 90))
 room_plt.grid()
 des_plt.grid()
 
@@ -107,6 +109,7 @@ if oddity == 0:
 else:
     correction = np.concatenate((correction[:0:-1], correction))
 freqs = np.linspace(-f_samp/2, f_samp/2, len(correction))
+# correction[np.abs(freqs) <= max(freq_start, 2 + f_samp//(2*ranges))] = 0 #Better looking plot
 correction[np.abs(freqs) <= freq_start] = 0
 
 correction_linear = 10**(correction/10)
@@ -122,7 +125,7 @@ spect_plt.set_title("Correction Frequency Response")
 spect_plt.set_ylabel("SPL (dB)")
 spect_plt.set_xlabel("$f$ (Hz)")
 spect_plt.set_xscale("log")
-spect_plt.set_xlim((1, spect_plt.get_xlim()[1]))
+spect_plt.set_xlim((10, spect_plt.get_xlim()[1]))
 spect_plt.grid()
 imp_plt.set_title("Correction Impulse Response")
 imp_plt.set_xlabel("$n$")
